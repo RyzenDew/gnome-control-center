@@ -61,10 +61,19 @@ on_scroll_adjustment_changed_cb (GtkAdjustment *adjustment,
     gtk_widget_set_visible (self->arrow_down, !is_bottom);
 }
 
+static void
+clear_timeout (guint *timeout_id)
+{
+    if (*timeout_id != 0) {
+        g_source_remove (*timeout_id);
+        *timeout_id = 0;
+    }
+}
+
 static gboolean
 reset_indicators (CcMouseTest *self)
 {
-    g_clear_handle_id (&self->reset_timeout_id, g_source_remove);
+    clear_timeout (&self->reset_timeout_id);
 
     gtk_widget_remove_css_class (self->primary_click_image, "success");
     gtk_widget_remove_css_class (self->secondary_click_image, "success");
@@ -76,7 +85,7 @@ reset_indicators (CcMouseTest *self)
 static gboolean
 primary_click_timeout (CcMouseTest *self)
 {
-    g_clear_handle_id (&self->primary_timeout_id, g_source_remove);
+    clear_timeout (&self->primary_timeout_id);
 
     gtk_widget_add_css_class (self->primary_click_image, "success");
 
@@ -94,8 +103,8 @@ on_test_button_clicked_cb (GtkGestureClick *gesture,
     guint button;
     guint reset_indicators_delay = self->double_click_delay * 2;
 
-    g_clear_handle_id (&self->reset_timeout_id, g_source_remove);
-    g_clear_handle_id (&self->primary_timeout_id, g_source_remove);
+    clear_timeout (&self->reset_timeout_id);
+    clear_timeout (&self->primary_timeout_id);
 
     reset_indicators (self);
 
@@ -140,8 +149,8 @@ cc_mouse_test_finalize (GObject *object)
 {
     CcMouseTest *self = CC_MOUSE_TEST (object);
 
-    g_clear_handle_id (&self->reset_timeout_id, g_source_remove);
-    g_clear_handle_id (&self->primary_timeout_id, g_source_remove);
+    clear_timeout (&self->reset_timeout_id);
+    clear_timeout (&self->primary_timeout_id);
 
     G_OBJECT_CLASS (cc_mouse_test_parent_class)->finalize (object);
 }

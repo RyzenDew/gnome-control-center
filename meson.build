@@ -1,6 +1,6 @@
 project(
   'gnome-control-center', 'c',
-        version : '46.beta.2',
+        version : '46.alpha',
         license : 'GPL2+',
   meson_version : '>= 0.58.0'
 )
@@ -126,7 +126,7 @@ libgvc = subproject(
 )
 libgvc_dep = libgvc.get_variable('libgvc_dep')
 
-goa_req_version = '>= 3.49.1'
+goa_req_version = '>= 3.25.3'
 pulse_req_version = '>= 2.0'
 
 gtk_dep = dependency(

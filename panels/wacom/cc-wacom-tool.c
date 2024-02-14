@@ -147,41 +147,6 @@ cc_wacom_tool_class_init (CcWacomToolClass *klass)
 	g_object_class_install_properties (object_class, N_PROPS, props);
 }
 
-static const WacomStylus *
-find_stylus_for_id (WacomDeviceDatabase  *wacom_db,
-		    CcWacomTool		*tool)
-{
-	const WacomStylus *eraser;
-	const gint *all_ids;
-	gint n_supported;
-	gint i;
-
-	eraser = libwacom_stylus_get_for_id (wacom_db, tool->id);
-	if (!libwacom_stylus_is_eraser (eraser))
-		return eraser;
-
-	all_ids = cc_wacom_device_get_supported_tools (tool->device, &n_supported);
-	for (i = 0; i < n_supported; i++) {
-		const WacomStylus *stylus;
-		const gint *paired_ids;
-		gint n_paired;
-		gint j;
-
-		if (all_ids[i] == tool->id)
-			continue;
-
-		stylus = libwacom_stylus_get_for_id (wacom_db, all_ids[i]);
-		paired_ids = libwacom_stylus_get_paired_ids (stylus, &n_paired);
-		for (j = 0; j < n_paired; j++) {
-			if (paired_ids[j] == tool->id) {
-				return libwacom_stylus_get_for_id (wacom_db, all_ids[i]);
-			}
-		}
-	}
-
-	return eraser;
-}
-
 static gboolean
 cc_wacom_tool_initable_init (GInitable     *initable,
 			     GCancellable  *cancellable,
@@ -202,13 +167,10 @@ cc_wacom_tool_initable_init (GInitable     *initable,
 			tool->id = ids[0];
 	}
 
-	if (tool->id == 0) {
+	if (tool->id == 0)
 		tool->wstylus = libwacom_stylus_get_for_id (wacom_db, 0xfffff);
-	} else {
-		tool->wstylus = find_stylus_for_id (wacom_db, tool);
-		if (tool->wstylus)
-			tool->id = libwacom_stylus_get_id (tool->wstylus);
-	}
+	else
+		tool->wstylus = libwacom_stylus_get_for_id (wacom_db, tool->id);
 
 	if (!tool->wstylus) {
 		g_set_error (error, 0, 0, "Stylus description not found");
@@ -341,13 +303,11 @@ cc_wacom_tool_get_num_buttons (CcWacomTool *tool)
 }
 
 gboolean
-cc_wacom_tool_get_has_paired_eraser (CcWacomTool *tool)
+cc_wacom_tool_get_has_eraser (CcWacomTool *tool)
 {
 	g_return_val_if_fail (CC_IS_WACOM_TOOL (tool), FALSE);
 
-	/* True if there is some other tool that is an eraser and
-	 * is physically associated with this tool */
-	return libwacom_stylus_has_eraser (tool->wstylus);
+	return libwacom_stylus_is_eraser (tool->wstylus);
 }
 
 const gchar *

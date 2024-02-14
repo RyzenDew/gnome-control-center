@@ -44,7 +44,6 @@
 /* a11y interface settings */
 #define A11Y_INTERFACE_SETTINGS      "org.gnome.desktop.a11y.interface"
 #define KEY_HIGH_CONTRAST            "high-contrast"
-#define KEY_STATUS_SHAPES            "show-status-shapes"
 
 /* interface settings */
 #define INTERFACE_SETTINGS           "org.gnome.desktop.interface"

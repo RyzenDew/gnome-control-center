@@ -51,9 +51,18 @@ set_hostname_timeout (CcHostnameEntry *self)
 }
 
 static void
+remove_hostname_timeout (CcHostnameEntry *self)
+{
+  if (self->set_hostname_timeout_source_id)
+    g_source_remove (self->set_hostname_timeout_source_id);
+
+  self->set_hostname_timeout_source_id = 0;
+}
+
+static void
 reset_hostname_timeout (CcHostnameEntry *self)
 {
-  g_clear_handle_id (&self->set_hostname_timeout_source_id, g_source_remove);
+  remove_hostname_timeout (self);
 
   self->set_hostname_timeout_source_id = g_timeout_add_seconds (SET_HOSTNAME_TIMEOUT,
                                                                 (GSourceFunc) set_hostname_timeout,
@@ -73,7 +82,7 @@ cc_hostname_entry_dispose (GObject *object)
 
   if (self->set_hostname_timeout_source_id)
     {
-      g_clear_handle_id (&self->set_hostname_timeout_source_id, g_source_remove);
+      remove_hostname_timeout (self);
       set_hostname_timeout (self);
     }
 

@@ -21,7 +21,6 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include "cc-wacom-panel.h"
 #include "cc-wacom-tool.h"
 
 G_BEGIN_DECLS
@@ -29,12 +28,8 @@ G_BEGIN_DECLS
 #define CC_TYPE_WACOM_STYLUS_PAGE (cc_wacom_stylus_page_get_type ())
 G_DECLARE_FINAL_TYPE (CcWacomStylusPage, cc_wacom_stylus_page, CC, WACOM_STYLUS_PAGE, GtkBox)
 
-GtkWidget * cc_wacom_stylus_page_new (CcWacomPanel *panel,
-				      CcWacomTool  *stylus);
+GtkWidget * cc_wacom_stylus_page_new (CcWacomTool *stylus);
 
 CcWacomTool * cc_wacom_stylus_page_get_tool (CcWacomStylusPage *page);
-
-void cc_wacom_stylus_page_set_highlight (CcWacomStylusPage *page,
-					 gboolean           highlight);
 
 G_END_DECLS

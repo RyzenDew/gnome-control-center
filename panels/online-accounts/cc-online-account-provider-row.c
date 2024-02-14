@@ -19,10 +19,6 @@
 #include <config.h>
 #include <glib/gi18n.h>
 
-#define GOA_API_IS_SUBJECT_TO_CHANGE
-#define GOA_BACKEND_API_IS_SUBJECT_TO_CHANGE
-#include <goabackend/goabackend.h>
-
 #include "cc-online-account-provider-row.h"
 #include "cc-online-accounts-resources.h"
 
@@ -32,46 +28,10 @@ struct _CcOnlineAccountProviderRow
 
   GtkImage *icon_image;
 
-  GoaProvider *provider;
+  GVariant *provider;
 };
 
 G_DEFINE_TYPE (CcOnlineAccountProviderRow, cc_online_account_provider_row, ADW_TYPE_ACTION_ROW)
-
-static const char *
-_goa_provider_get_provider_title (GoaProvider *provider)
-{
-  const char *provider_type = NULL;
-
-  g_assert (GOA_IS_PROVIDER (provider));
-
-  /* The order here is the same used to sort accounts and providers in the UI,
-   * The title, if present, should bump the provider name to subtitle.
-   */
-  struct
-  {
-    const char *provider;
-    const char *title;
-  } goa_metadata[] = {
-    {"imap_smtp", N_("Email")},                   /* IMAP and SMTP */
-    {"webdav", N_("Calendars, Contacts, Files")}, /* WebDAV */
-    {"owncloud", NULL},                           /* Nextcloud */
-    {"google", NULL},                             /* Google */
-    {"ms_graph", NULL},                           /* Microsoft 365 */
-    {"exchange", NULL},                           /* Microsoft Exchange */
-    {"windows_live", NULL},                       /* Microsoft Personal */
-    {"kerberos", N_("Enterprise Login")},         /* Enterprise Login (Kerberos) */
-    {"fedora", NULL},                             /* Fedora */
-  };
-
-  provider_type = goa_provider_get_provider_type (provider);
-  for (size_t i = 0; i < G_N_ELEMENTS (goa_metadata); i++)
-    {
-      if (g_str_equal (goa_metadata[i].provider, provider_type))
-        return goa_metadata[i].title;
-    }
-
-  return NULL;
-}
 
 static gboolean
 is_gicon_symbolic (GtkWidget *widget,
@@ -96,7 +56,7 @@ cc_online_account_provider_row_dispose (GObject *object)
 {
   CcOnlineAccountProviderRow *self = CC_ONLINE_ACCOUNT_PROVIDER_ROW (object);
 
-  g_clear_object (&self->provider);
+  g_clear_pointer (&self->provider, g_variant_unref);
 
   G_OBJECT_CLASS (cc_online_account_provider_row_parent_class)->dispose (object);
 }
@@ -121,12 +81,11 @@ cc_online_account_provider_row_init (CcOnlineAccountProviderRow *self)
 }
 
 CcOnlineAccountProviderRow *
-cc_online_account_provider_row_new (GoaProvider *provider)
+cc_online_account_provider_row_new (GVariant *provider)
 {
   CcOnlineAccountProviderRow *self;
   g_autoptr(GIcon) icon = NULL;
   g_autofree gchar *name = NULL;
-  const char *title = NULL;
 
   self = g_object_new (cc_online_account_provider_row_get_type (), NULL);
 
@@ -137,10 +96,18 @@ cc_online_account_provider_row_new (GoaProvider *provider)
     }
   else
     {
-      self->provider = g_object_ref (provider);
-      icon = goa_provider_get_provider_icon (provider, NULL);
-      name = goa_provider_get_provider_name (provider, NULL);
-      title = _goa_provider_get_provider_title (provider);
+      g_autoptr(GVariant) icon_variant = NULL;
+
+      self->provider = g_variant_ref (provider);
+
+      g_variant_get (provider, "(ssviu)",
+                     NULL,
+                     &name,
+                     &icon_variant,
+                     NULL,
+                     NULL);
+
+      icon = g_icon_deserialize (icon_variant);
     }
 
   gtk_image_set_from_gicon (self->icon_image, icon);
@@ -155,20 +122,12 @@ cc_online_account_provider_row_new (GoaProvider *provider)
       gtk_widget_add_css_class (GTK_WIDGET (self->icon_image), "lowres-icon");
     }
 
-  if (title != NULL)
-    {
-      adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self), title);
-      adw_action_row_set_subtitle (ADW_ACTION_ROW (self), name);
-    }
-  else
-    {
-      adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self), name);
-    }
+  adw_preferences_row_set_title (ADW_PREFERENCES_ROW (self), name);
 
   return self;
 }
 
-GoaProvider *
+GVariant *
 cc_online_account_provider_row_get_provider (CcOnlineAccountProviderRow *self)
 {
   g_return_val_if_fail (CC_IS_ONLINE_ACCOUNT_PROVIDER_ROW (self), NULL);
