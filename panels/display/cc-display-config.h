@@ -133,7 +133,6 @@ struct _CcDisplayMonitorClass
                                                int               *y,
                                                int               *w,
                                                int               *h);
-  int               (*get_min_freq)           (CcDisplayMonitor  *self);
   gboolean          (*supports_variable_refresh_rate) (CcDisplayMonitor  *self);
   gboolean          (*supports_underscanning) (CcDisplayMonitor  *self);
   gboolean          (*get_underscanning)      (CcDisplayMonitor  *self);
@@ -247,7 +246,6 @@ void              cc_display_monitor_get_geometry           (CcDisplayMonitor  *
                                                              int               *y,
                                                              int               *width,
                                                              int               *height);
-int               cc_display_monitor_get_min_freq           (CcDisplayMonitor  *monitor);
 GList*            cc_display_monitor_get_modes              (CcDisplayMonitor  *monitor);
 CcDisplayMode*    cc_display_monitor_get_preferred_mode     (CcDisplayMonitor  *monitor);
 double            cc_display_monitor_get_scale              (CcDisplayMonitor  *monitor);
