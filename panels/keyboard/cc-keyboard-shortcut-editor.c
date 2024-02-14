@@ -758,7 +758,10 @@ cc_keyboard_shortcut_editor_unrealize (GtkWidget *widget)
 {
   CcKeyboardShortcutEditor *self = CC_KEYBOARD_SHORTCUT_EDITOR (widget);
 
-  g_clear_handle_id (&self->grab_idle_id, g_source_remove);
+  if (self->grab_idle_id) {
+    g_source_remove (self->grab_idle_id);
+    self->grab_idle_id = 0;
+  }
 
   uninhibit_system_shortcuts (self);
 

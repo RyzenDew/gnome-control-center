@@ -120,7 +120,7 @@ activate_panel (CcWindow          *self,
                 CcPanelVisibility  visibility)
 {
   g_autoptr(GTimer) timer = NULL;
-  gdouble elapsed_time;
+  gdouble ellapsed_time;
 
   CC_ENTRY;
 
@@ -145,9 +145,9 @@ activate_panel (CcWindow          *self,
   /* Finish profiling */
   g_timer_stop (timer);
 
-  elapsed_time = g_timer_elapsed (timer, NULL);
+  ellapsed_time = g_timer_elapsed (timer, NULL);
 
-  g_debug ("Time to open panel '%s': %lfs", name, elapsed_time);
+  g_debug ("Time to open panel '%s': %lfs", name, ellapsed_time);
 
   g_settings_set_string (self->settings, "last-panel", id);
 

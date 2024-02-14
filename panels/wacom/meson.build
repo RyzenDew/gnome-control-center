@@ -37,7 +37,6 @@ common_sources = files(
   'cc-wacom-button-row.c',
   'cc-wacom-device.c',
   'cc-wacom-page.c',
-  'cc-wacom-stylus-action-dialog.c',
   'cc-wacom-stylus-page.c',
   'cc-wacom-tool.c',
   'gsd-wacom-key-shortcut-button.c'

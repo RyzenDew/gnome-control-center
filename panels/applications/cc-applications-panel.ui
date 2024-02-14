@@ -152,20 +152,6 @@
                       <object class="CcDefaultAppsPage" id="default_apps_page" />
                     </child>
 
-                    <!-- "Automatically Launch Apps" row -->
-                    <child>
-                      <object class="AdwPreferencesGroup">
-                        <property name="title" translatable="yes">Removable Media</property>
-                        <child>
-                          <object class="AdwSwitchRow" id="autorun_never_row">
-                            <property name="title" translatable="yes">Automat_ically Launch Apps</property>
-                            <property name="subtitle" translatable="yes">Start apps when media is connected or inserted</property>
-                            <property name="use_underline">True</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-
                     <!-- Removable Media Settings -->
                     <child>
                       <object class="CcRemovableMediaSettings" id="removable_media_settings" />
@@ -316,7 +302,7 @@
                             <child>
                               <object class="AdwSwitchRow" id="wallpaper">
                                 <property name="title" translatable="yes">Change _Wallpaper</property>
-                                <property name="subtitle" translatable="yes">Change the desktop wallpaper</property>
+                                <property name="subtitle" translatable="yes">Change the desktop wallpaper.</property>
                                 <property name="use-underline">True</property>
                                 <signal name="notify::active" handler="wallpaper_cb" swapped="yes"/>
                               </object>
@@ -324,7 +310,7 @@
                             <child>
                               <object class="AdwSwitchRow" id="sound">
                                 <property name="title" translatable="yes">So_unds</property>
-                                <property name="subtitle" translatable="yes">Reproduce sounds</property>
+                                <property name="subtitle" translatable="yes">Reproduce sounds.</property>
                                 <property name="use-underline">True</property>
                                 <signal name="notify::active" handler="sound_cb" object="CcApplicationsPanel" swapped="yes"/>
                               </object>
@@ -578,7 +564,7 @@
         </child>
         <property name="content">
           <object class="AdwPreferencesPage">
-            <property name="description" translatable="yes">How much disk space this app is occupying with app data and caches</property>
+            <property name="description" translatable="yes">How much disk space this app is occupying with app data and caches.</property>
             <child>
               <object class="AdwPreferencesGroup">
                 <child>

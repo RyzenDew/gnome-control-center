@@ -41,7 +41,6 @@ struct _CcAboutPage
   AdwPreferencesGroup *software_updates_group;
 
   GtkWindow       *system_details_window;
-  guint            create_system_details_id;
 };
 
 G_DEFINE_TYPE (CcAboutPage, cc_about_page, ADW_TYPE_NAVIGATION_PAGE)
@@ -55,6 +54,7 @@ about_page_setup_overview (CcAboutPage *self)
   g_autofree char *os_name_text = NULL;
   g_autofree char *hardware_model_text = NULL;
   g_autofree gchar *disk_capacity_string = NULL;
+  GtkWindow *parent;
 
   hardware_model_text = get_hardware_model_string ();
   cc_list_row_set_secondary_label (self->hardware_model_row, hardware_model_text);
@@ -76,6 +76,10 @@ about_page_setup_overview (CcAboutPage *self)
 
   os_name_text = get_os_name ();
   cc_list_row_set_secondary_label (self->os_name_row, os_name_text);
+
+  self->system_details_window = GTK_WINDOW (cc_system_details_window_new ());
+  parent = (GtkWindow *) gtk_widget_get_native (GTK_WIDGET (self));
+  gtk_window_set_transient_for (GTK_WINDOW (self->system_details_window), parent);
 }
 
 static gboolean
@@ -114,26 +118,10 @@ does_gpk_update_viewer_exist (void)
   return path != NULL;
 }
 
-static gboolean
-cc_about_page_create_system_details (CcAboutPage *self)
-{
-  if (!self->system_details_window)
-    {
-      self->system_details_window = GTK_WINDOW (cc_system_details_window_new ());
-      g_object_ref_sink (self->system_details_window);
-    }
-
-  g_clear_handle_id (&self->create_system_details_id, g_source_remove);
-
-  return G_SOURCE_REMOVE;
-}
-
 static void
 cc_about_page_open_system_details (CcAboutPage *self)
 {
   GtkNative *parent;
-
-  cc_about_page_create_system_details (self);
 
   parent = gtk_widget_get_native (GTK_WIDGET (self));
   gtk_window_set_transient_for (self->system_details_window, GTK_WINDOW (parent));
@@ -218,26 +206,9 @@ setup_os_logo (CcAboutPage *self)
 }
 
 static void
-cc_about_page_dispose (GObject *object)
-{
-  CcAboutPage *self = CC_ABOUT_PAGE (object);
-
-  if (self->system_details_window)
-    gtk_window_destroy (self->system_details_window);
-  g_clear_object (&self->system_details_window);
-
-  g_clear_handle_id (&self->create_system_details_id, g_source_remove);
-
-  G_OBJECT_CLASS (cc_about_page_parent_class)->dispose (object);
-}
-
-static void
 cc_about_page_class_init (CcAboutPageClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
-  object_class->dispose = cc_about_page_dispose;
 
   g_type_ensure (CC_TYPE_HOSTNAME_ENTRY);
 
@@ -272,6 +243,4 @@ cc_about_page_init (CcAboutPage *self)
   style_manager = adw_style_manager_get_default ();
   g_signal_connect_object (style_manager, "notify::dark", G_CALLBACK (setup_os_logo), self, G_CONNECT_SWAPPED);
   setup_os_logo (self);
-
-  self->create_system_details_id = g_idle_add (G_SOURCE_FUNC (cc_about_page_create_system_details), self);
 }
