@@ -182,21 +182,35 @@ make_refresh_rate_string (CcDisplayMode *mode)
 }
 
 static gchar *
-make_variable_refresh_rate_string (CcDisplayMode *mode)
+make_variable_refresh_rate_string (CcDisplayMonitor *output,
+                                   CcDisplayMode    *mode)
 {
-  return g_strdup_printf (_("Variable (up to %.2lf Hz)"),
-                          cc_display_mode_get_freq_f (mode));
+  int min_freq;
+
+  min_freq = cc_display_monitor_get_min_freq (output);
+  if (min_freq > 0)
+    {
+      return g_strdup_printf (_("Variable (%d\u202f\u2013\u202f%.2lf Hz)"),
+                              min_freq,
+                              cc_display_mode_get_freq_f (mode));
+    }
+  else
+    {
+      return g_strdup_printf (_("Variable (up to %.2lf Hz)"),
+                              cc_display_mode_get_freq_f (mode));
+    }
 }
 
 static gchar *
-make_expander_refresh_rate_string (CcDisplayMode *mode)
+make_expander_refresh_rate_string (CcDisplayMonitor *output,
+                                   CcDisplayMode    *mode)
 {
   switch (cc_display_mode_get_refresh_rate_mode (mode))
     {
     case MODE_REFRESH_RATE_MODE_FIXED:
       return make_refresh_rate_string (mode);
     case MODE_REFRESH_RATE_MODE_VARIABLE:
-      return make_variable_refresh_rate_string (mode);
+      return make_variable_refresh_rate_string (output, mode);
     default:
       g_assert_not_reached();
     }
@@ -207,7 +221,8 @@ make_expander_refresh_rate_string (CcDisplayMode *mode)
 static gboolean
 mode_to_refresh_rate_transform_func (GBinding          *binding,
                                      const GValue      *source_value,
-                                     GValue            *target_value)
+                                     GValue            *target_value,
+                                     CcDisplaySettings *self)
 {
   CcDisplayMode *mode;
   gchar *refresh_rate_string;
@@ -221,7 +236,8 @@ mode_to_refresh_rate_transform_func (GBinding          *binding,
   mode = CC_DISPLAY_MODE (g_value_get_object (source_value));
   g_return_val_if_fail (mode != NULL, FALSE);
 
-  refresh_rate_string = make_expander_refresh_rate_string (mode);
+  refresh_rate_string =
+    make_expander_refresh_rate_string (self->selected_output, mode);
 
   g_value_take_string (target_value, refresh_rate_string);
 
@@ -914,7 +930,7 @@ cc_display_settings_init (CcDisplaySettings *self)
                                "label",
                                G_BINDING_DEFAULT,
                                (GBindingTransformFunc) mode_to_refresh_rate_transform_func,
-                               NULL, NULL, NULL);
+                               NULL, self, NULL);
 
   expression = gtk_cclosure_expression_new (G_TYPE_STRING,
                                             NULL, 0, NULL,
